@@ -1,0 +1,2 @@
+name: super-flash-200k (风神 · Flash · 200K)
+description: 基于 flash-super 风神 Router 的 200k 上下文控制版 — 内置 Context Compiler（原文归档 + 结构化记忆 + 动态装配 + 证据检索 + 压缩审计）；约 140k 触发压缩、保留 24k 尾巴、摘要上限 16k，工具输出内联上限 16KB。
