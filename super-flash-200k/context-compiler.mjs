@@ -640,7 +640,7 @@ export function apply(ctx, config) {
     if (existing !== undefined) return existing
     const task = (async () => {
       const state = await store.load(session.id)
-      const events = Array.from(session.events ?? [])
+      const events = typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : []
       const lastSeq = events.length > 0 ? events[events.length - 1].seq ?? 0 : 0
       if (state.last_processed_seq < lastSeq) {
         const missing = events.filter((event) => (event.seq ?? 0) > state.last_processed_seq && event.type !== 'turn/end')
@@ -981,7 +981,7 @@ export function apply(ctx, config) {
   const snapshotForTurnIsDurable = (session, turn) => {
     const known = injected.get(session.id)
     if (known && known.turn === turn) return true
-    const found = Array.from(session.events ?? []).some((event) =>
+    const found = (typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : []).some((event) =>
       event.type === 'user/message'
       && event.data?.source?.kind === SNAPSHOT_SOURCE_KIND
       && event.data?.source?.turn === turn,
@@ -1037,7 +1037,7 @@ export function apply(ctx, config) {
 
   function latestCompactionEndSeq(session) {
     let seq = -1
-    for (const event of Array.from(session.events ?? [])) {
+    for (const event of (typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : [])) {
       if (event.type === 'compaction/end') seq = Math.max(seq, event.seq ?? 0)
     }
     return seq
@@ -1344,13 +1344,13 @@ export function apply(ctx, config) {
 
   function latestTurnOf(session) {
     let turn = 0
-    for (const event of Array.from(session.events ?? [])) turn = Math.max(turn, event.data?.turn ?? 0)
+    for (const event of (typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : [])) turn = Math.max(turn, event.data?.turn ?? 0)
     return turn
   }
 
   function renderTurn(session, turn) {
     const lines = []
-    for (const event of Array.from(session.events ?? [])) {
+    for (const event of (typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : [])) {
       if ((event.data?.turn ?? 0) !== turn) continue
       if (!['user/message', 'assistant/message', 'tool/call', 'tool/result', 'todo/write'].includes(event.type)) continue
       const text = truncate(eventText(event), opts.evidenceMaxChars)
@@ -1360,7 +1360,7 @@ export function apply(ctx, config) {
   }
 
   function renderSeq(session, seq) {
-    for (const event of Array.from(session.events ?? [])) {
+    for (const event of (typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : [])) {
       if ((event.seq ?? 0) === seq) {
         return `seq_${seq} ${event.type}:\n\n${truncate(eventText(event), opts.evidenceMaxChars * 3)}`
       }

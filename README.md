@@ -74,3 +74,21 @@ $DSH_HOME/context-compiler/memory/<project-hash>.json
 ```
 
 完整设计说明见 `super-flash-200k/context-compiler.README.md`。
+
+## 版本适配（DSH 0.1.2-rc.1）
+
+2026-09-05 针对 DSH `0.1.2-rc.1` 的适配更新：
+
+- **API 变更修复**：`0.1.2-rc.1` 移除了 `Session.events` 数组，改为
+  `session.snapshotEvents()`。旧代码在首次装配时直接读 `session.events`
+  会抛 `Cannot read properties of undefined`，或静默失效（路由器的“首个
+  durable 工具调用后开放全量目录”永远不触发、`context_read`/`context_report`
+  证据检索读不到原文）。三个脚本（`router-bootstrap.mjs`、
+  `router-core.mjs`、`context-compiler.mjs`）已全部改用
+  `snapshotEvents()`。
+- **`agent.cordis.yml` 对齐当前 standard**：spawn 子代理增加
+  `modelSelectionSettings: true`；product 行改用 `backgroundMode: one-shot`
+  （原 `enableRunInBackground: false` 依然合法但已非现行写法）；补充
+  `command-goal` 行使 `/goal` 人类命令对本 preset 会话可用。
+- 安装后请重启 dsh web，在 preset 选择器重新选择
+  `super-flash-200k (风神 · Flash · 200K)` 使新组合生效。

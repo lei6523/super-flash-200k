@@ -141,7 +141,11 @@ export function classifyTask(text) {
 
 /** Per-session mode derived from durable events (resume-safe). */
 export function sessionMode(session) {
-  const events = session.events
+  // DSH 0.1.2-rc.1 removed the Session.events array in favor of
+  // snapshotEvents(); reading the current API keeps mode derivation working
+  // instead of degrading to an always-empty list (which misclassifies every
+  // session as "weak").
+  const events = typeof session?.snapshotEvents === 'function' ? session.snapshotEvents() : []
   const userMsg = events.find((e) => e.type === 'user/message')
   return classifyTask(extractText(userMsg?.data))
 }
